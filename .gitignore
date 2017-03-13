@@ -1,17 +1,23 @@
-*.class
-*.log
+# IntelliJ Idea
+*.iws
+/.idea/
+/out/
 
-# sbt specific
+# JVM
+hs_err_pid*
+*.hprof
+
+# Mac
+.DS_Store
+
+# SBT (see: https://github.com/github/gitignore/blob/master/Global/SBT.gitignore)
 .cache
-.history
-.lib/
-dist/*
-target/
-lib_managed/
-src_managed/
+**/target/
+**/lib_managed/
+**/src_managed/
 project/boot/
-project/plugins/project/
 
-# Scala-IDE specific
-.scala_dependencies
-.worksheet
+# VIM
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+Session.vim

@@ -19,7 +19,6 @@ scalacOptions ++= Seq(
   "-target:jvm-1.8",
   "-unchecked",
   "-Xlint:_,-package-object-classes",
-  "-Yinline-warnings",
   "-Ywarn-dead-code",
   "-Ywarn-inaccessible",
   "-Ywarn-nullary-override",

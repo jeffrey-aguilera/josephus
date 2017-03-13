@@ -1,6 +1,6 @@
 package us.aguilera.josephus
 
-object Survivor {
+object Survivor extends ((Int, Int) => Int) {
 
   def apply(size: Int, step: Int): Int = {
     size match {
@@ -8,6 +8,18 @@ object Survivor {
         if (step < 0) {
           // go around circle in opposite direction
           (size + 1) - Survivor(size, 1 - step)
+        } else if (step == 0) {
+          1
+        } else if (step == 1) {
+          size
+        } else if (step < size) {
+          // recurse on exponentially decreasing sizes
+          val smaller = Survivor(size - size/step, step)
+          if (smaller <= size % step) {
+            smaller + (size / step) * step
+          } else {
+            (step * ((smaller - (size % step)) - 1)) / (step - 1) + 1
+          }
         } else {
           // convert primitive recursion to iteration
           (new Survivor(step))(size)
@@ -15,15 +27,6 @@ object Survivor {
       case _ =>
         throw new IllegalArgumentException(s"size must be positive, not $size")
     }
-  }
-
-  def debug(sizes: Range, steps: Range): Unit = {
-    val start = System.nanoTime()
-    for (size <- sizes; step <- steps) {
-      Survivor(size, step)
-    }
-    val nanos = System.nanoTime() - start
-    println(s"Survivor($sizes, $steps) took ${nanos/1000000} ms")
   }
 }
 

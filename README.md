@@ -85,19 +85,21 @@ The special cases noted above are used for testing, but not by `NaiveSurvivor` d
 The problem with this solution is that the shuffling needed to keep the cursor at the beginning of the circular list
 is very expensive.
 
-Nevertheless, this constitutes a reference implementation.
+Nevertheless, this constitutes a reference implementation that can be used to verify the correctness of more complicated versions.
 
 ## Improved Solution
 
 If `k ≤ n`, we can perform multiple deletions in one step.
-The trick is to partition the elements of the circle into groups of size `k` and then drop the last element of each group.
+Start by partitioning the elements of the circle into groups of size `k` and then drop the last element of each group.
 The tricky part occurs when the last group contains fewer than `k` elements.
 
-`FastSurvivor` uses this technique with `Circle`.
-For very large `n`, the performance difference is not as large as expected:
+`FasterSurvivor` uses this technique with `Circle`.
+For very large `n`, the performance difference is not as prounounced as expected:
 
-        NaiveSurvivor(Range 10000000 to 10000000, Range 2 to 2) took 11054 ms
-        FastSurvivor(Range 10000000 to 10000000, Range 2 to 2) took 4151 ms
+| Solver         | Size     | Step | Time    |
+|----------------|----------|------|---------|
+| NaiveSurvivor  | 10000000 | 2    | 8732 ms |
+| FasterSurvivor | 10000000 | 2    | 4953 ms |
 
 ## Recursive Solution
 
@@ -130,9 +132,47 @@ After some manipulation and legerdemain, this reduces to
 
 which produces the same results as the reference implementation, but with much less time and bounded memory.
 
+| Solver         | Size     | Step | Time    |
+|----------------|----------|------|---------|
+| NaiveSurvivor  | 10000000 | 2    | 8732 ms |
+| FasterSurvivor | 10000000 | 2    | 4953 ms |
+| Survivor       | 10000000 | 2    |  178 ms |
+
+It's possible to optimize this even further by using the same trick that was used in the **Improved Solution** section above
+for `k ≤ n`.
+Now, all the multiples of `k` are deleted from the original circle, with some tricky left overs at the right edge.
+For example, with `n = 11` and `k = 4`, the decoder ring looks like this:
+
+| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
+|---|---|---|---|---|---|---|---|---|----|----|
+| 4 | 5 | 6 | - | 7 | 8 | 9 | - | 1 |  2 |  3 |
+
+The last (partial) group starts at index `(n/k)k`---8 in this case---where integer division is assumed.
+Thus,
+
+    Survivor(n, k) = Survivor(n - n/k, k) + (n/k)k,     if Survivor(n - n/k, k) <= n mod k
+
+When the numbering wraps around on the bottom, we need to boost the output by one every `k - 1` entries, starting at `(n mod k) + 1`;
+so if `Survivor(n - n/k, k) > n mod k`:
+
+    Survivor(n, k) = (Survivor(n - n/k, k) - (n mod k) - 1) + 1 + (Survivor(n - n/k, k) - (n mod k) - 1)/(k-1)
+                   = (k * ((Survivor(n - n/k, k) - (n mod k) - 1))/(k-1) + 1
+
+which produces the same results as the reference implementation, but with much less time and bounded memory.
+
+| Solver             | Size     | Step | Time    |
+|--------------------|----------|------|---------|
+| NaiveSurvivor      | 10000000 | 2    | 8732 ms |
+| FasterSurvivor     | 10000000 | 2    | 4953 ms |
+| Survivor           | 10000000 | 2    |  178 ms |
+| Survivor (revised) | 10000000 | 2    |    2 ms |
+
+No that's more like it!
+
 ## Running
 
     sbt "run size step"
 
-where `size` is the initial size of the circle and `step` is the fixed number of positions to count off starting at
-zero. `size` should be positive; and `step` should be non-negative.
+where `size` is the initial size of the circle and `step` is the fixed number of positions to count off starting at zero.
+`size` should be positive.
+The resulting survivor position is 1-based.

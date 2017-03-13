@@ -1,19 +1,10 @@
 package us.aguilera.josephus
 
-object NaiveSurvivor {
+object NaiveSurvivor extends ((Int, Int) => Int) {
 
   def apply(size: Int, step: Int): Int = {
     // do not use trivial forms here so that they are usable as test cases
     (new NaiveSurvivor(step))(Circle(size))
-  }
-
-  def debug(sizes: Range, steps: Range): Unit = {
-    val start = System.nanoTime()
-    for (size <- sizes; step <- steps) {
-      NaiveSurvivor(size, step)
-    }
-    val nanos = System.nanoTime() - start
-    println(s"NaiveSurvivor($sizes, $steps) took ${nanos/1000000} ms")
   }
 }
 

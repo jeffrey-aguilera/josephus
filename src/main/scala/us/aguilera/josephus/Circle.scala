@@ -38,9 +38,7 @@ case class Circle[+T](private val elements: Vector[T]) extends (Int => T) {
   }
 
   def take(count: Int): Option[Circle[T]] = {
-    if (count >= size) {
-      Some(this)
-    } else if (count > 0) {
+    if (count > 0) {
       Some(Circle(elements.take(count)))
     } else {
       None
@@ -49,26 +47,11 @@ case class Circle[+T](private val elements: Vector[T]) extends (Int => T) {
 
   /** Delete the element before `step` and reposition the cursor to the beginning of the new [[Circle]].
     *
-    * This is equivalent to
-    * {{{
-    * rotate(step mod size).take(size - 1)
-    * }}}
-    * but the `rotate` and `take` are performed in one step.
-    *
     * @param step between deleted elements.
     * @return A smaller [[Option[Circle[T]].
     */
   def delete(step: Int): Option[Circle[T]] = {
-    if (size == 1) {
-      None
-    } else {
-      val skip = step mod size
-      if (skip == 0) {
-        Some(Circle(elements.take(size - 1)))
-      } else {
-        Some(Circle(elements.drop(skip) ++ elements.take(skip - 1)))
-      }
-    }
+    rotate(step mod size).take(size - 1)
   }
 
   /** Makes one pass through the circle deleting all multiples of `step`, provided it is not larger than `size`.
@@ -89,6 +72,7 @@ case class Circle[+T](private val elements: Vector[T]) extends (Int => T) {
         Some(Circle(Vector(apply(-1))))
       case k if k <= size =>
         // remove `size/step` entries in one pass - be careful where the iterator is converted to a vector!
+        // the tricky part referred to in `README.md` is `rotate(-size % step)`
         Circle(elements.grouped(step).flatMap(_.take(step - 1)).toVector).rotate(-size % step).take(size - size / step)
       case _ =>
         delete(step)

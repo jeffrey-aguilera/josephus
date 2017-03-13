@@ -7,7 +7,7 @@ organizationHomepage := Some(new URL("https://github.com/jeffrey-aguilera"))
 name := "josephus"
 homepage := Some(new URL("https://github.com/jeffrey-aguilera/josephus"))
 startYear := Some(2017)
-version := "0.0.1"
+version := "0.0.1-SNAPSHOT"
 
 scalaVersion := "2.12.1"
 scalacOptions ++= Seq(

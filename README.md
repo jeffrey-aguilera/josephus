@@ -71,15 +71,15 @@ It is also easy to show that `Survivor(n, n) = Survivor(n - 1, n) = 1 + Survivor
 
 ## Simulated Solution
 
-To simulate a solution to this problem, start with a `NaiveCircle` of labelled ordinal positions from `1` to `n`.
+To simulate a solution to this problem, start with a `Circle` of labelled ordinal positions from `1` to `n`.
 The simplest means of reducing this to a smaller problem parallels the example above by iterative reduction to the next
-smaller circle with special care to keep the cursor fixed before the first element of the `NaiveCircle`:
+smaller circle with special care to keep the cursor fixed before the first element of the `Circle`:
 
  * let `k' = k mod n` be the effective step
- * if `k'` is zero, generate a new `NaiveCircle` from the first `n - 1` elements
+ * if `k'` is zero, generate a new `Circle` from the first `n - 1` elements
  * otherwise, move the first `k - 1` elements to the end and skip the `k`-th element
 
-This `NaiveCircle` is used by the `NaiveSurvivor` class to find the survivor index.
+This `Circle` is used by the `NaiveSurvivor` class to find the survivor index.
 The special cases noted above are used for testing, but not by `NaiveSurvivor` directly.
 
 The problem with this solution is that the shuffling needed to keep the cursor at the beginning of the circular list
@@ -87,6 +87,48 @@ is very expensive.
 
 Nevertheless, this constitutes a reference implementation.
 
+## Improved Solution
+
+If `k ≤ n`, we can perform multiple deletions in one step.
+The trick is to partition the elements of the circle into groups of size `k` and then drop the last element of each group.
+The tricky part occurs when the last group contains fewer than `k` elements.
+
+`FastSurvivor` uses this technique with `Circle`.
+For very large `n`, the performance difference is not as large as expected:
+
+        NaiveSurvivor(Range 10000000 to 10000000, Range 2 to 2) took 11054 ms
+        FastSurvivor(Range 10000000 to 10000000, Range 2 to 2) took 4151 ms
+
+## Recursive Solution
+
+Simulating the motion of a `Circle` to solve this problem is clearly overkill.
+`Survivor(n, k)` can be solved in terms of the next smaller problem by merely relabelling the indexes.
+
+| 1     | 2     | ... | k-1 | k       | k+1 | ... | n   |
+|-------|-------|-----|-----|---------|-----|-----|-----|
+| n-k+1 | n-k+2 | ... | n-1 | deleted |  1  | ... | n-k |
+
+That is,
+
+    Survivor(n, k) = Survivor(n-1, k) + k,          if Survivor(n-1, k) <= n - k
+    Survivor(n, k) = Survivor(n-1, k) + k - n,      if Survivor(n-1, k) > n - k
+
+or
+
+    Survivor(1, k) = 1
+    Survivor(n, k) = ((Survivor(n-1, k) + k - 1) mod n) + 1
+
+This is a primitive recursive formula, so it is guaranteed to terminate; but it is not tail recursive.
+Consequently, this formula is expected to stack overflow prematurely.
+This can be avoided by converting the recursion to an iteration.
+After some manipulation and legerdemain, this reduces to
+
+    (1 to size).fold(1) {
+      case (value, n) =>
+        ((value + step - 1) mod n) + 1
+    }
+
+which produces the same results as the reference implementation, but with much less time and bounded memory.
 
 ## Running
 

@@ -1,21 +1,21 @@
 package us.aguilera.josephus
 
-/** [[NaiveCircle]] companion for generating the initial [[NaiveCircle]] of a given size. */
-object NaiveCircle {
+/** [[Circle]] companion for generating the initial [[Circle]] of a given size. */
+object Circle {
 
-  /** @return [[NaiveCircle[Int]] of the given positive `size`.*/
-  def apply(size: Int): NaiveCircle[Int] = {
-    NaiveCircle((1 to size).toVector)
+  /** @return [[Circle[Int]] of the given positive `size`.*/
+  def apply(size: Int): Circle[Int] = {
+    Circle((1 to size).toVector)
   }
 }
 
-/** [[NaiveCircle]] represents a circular arrangement of labelled elements with an imaginary cursor located before the
+/** [[Circle]] represents a circular arrangement of labelled elements with an imaginary cursor located before the
   * first element.
   *
   * @param elements opaque, ordered labels.
   * @tparam T type of labels, e.g., ordinal indexes or names.
   */
-case class NaiveCircle[+T](private val elements: Vector[T]) extends (Int => T) {
+case class Circle[+T](private val elements: Vector[T]) extends (Int => T) {
 
   require(elements.nonEmpty, "Circle must include at least one element")
 
@@ -29,25 +29,25 @@ case class NaiveCircle[+T](private val elements: Vector[T]) extends (Int => T) {
   }
 
   // FastSurvivor does not know how to handle negative `step`
-  def reverse: NaiveCircle[T] = {
-    NaiveCircle(elements.reverse)
+  def reverse: Circle[T] = {
+    Circle(elements.reverse)
   }
 
-  def rotate(rotation: Int): NaiveCircle[T] = {
-    NaiveCircle(elements.rotate(rotation))
+  def rotate(rotation: Int): Circle[T] = {
+    Circle(elements.rotate(rotation))
   }
 
-  def take(count: Int): Option[NaiveCircle[T]] = {
+  def take(count: Int): Option[Circle[T]] = {
     if (count >= size) {
       Some(this)
     } else if (count > 0) {
-      Some(NaiveCircle(elements.take(count)))
+      Some(Circle(elements.take(count)))
     } else {
       None
     }
   }
 
-  /** Delete the element before `step` and reposition the cursor to the beginning of the new [[NaiveCircle]].
+  /** Delete the element before `step` and reposition the cursor to the beginning of the new [[Circle]].
     *
     * This is equivalent to
     * {{{
@@ -58,15 +58,15 @@ case class NaiveCircle[+T](private val elements: Vector[T]) extends (Int => T) {
     * @param step between deleted elements.
     * @return A smaller [[Option[Circle[T]].
     */
-  def delete(step: Int): Option[NaiveCircle[T]] = {
+  def delete(step: Int): Option[Circle[T]] = {
     if (size == 1) {
       None
     } else {
       val skip = step mod size
       if (skip == 0) {
-        Some(NaiveCircle(elements.take(size - 1)))
+        Some(Circle(elements.take(size - 1)))
       } else {
-        Some(NaiveCircle(elements.drop(skip) ++ elements.take(skip - 1)))
+        Some(Circle(elements.drop(skip) ++ elements.take(skip - 1)))
       }
     }
   }
@@ -77,19 +77,19 @@ case class NaiveCircle[+T](private val elements: Vector[T]) extends (Int => T) {
     * @param step between deleted elements.
     * @return A smaller [[Option[Circle[T]].
     */
-  def deleteMultiple(step: Int): Option[NaiveCircle[T]] = {
+  def deleteMultiple(step: Int): Option[Circle[T]] = {
 
     // use reflection formula instead
     require(step >= 0)
 
     step match {
       case 0 =>
-        Some(NaiveCircle(Vector(apply(0))))
+        Some(Circle(Vector(apply(0))))
       case 1 =>
-        Some(NaiveCircle(Vector(apply(-1))))
+        Some(Circle(Vector(apply(-1))))
       case k if k <= size =>
-        // remove `size/step` entries at once
-        NaiveCircle(elements.grouped(step).toVector.flatMap(_.take(step - 1))).rotate(-size % step).take(size - size / step)
+        // remove `size/step` entries in one pass - be careful where the iterator is converted to a vector!
+        Circle(elements.grouped(step).flatMap(_.take(step - 1)).toVector).rotate(-size % step).take(size - size / step)
       case _ =>
         delete(step)
     }

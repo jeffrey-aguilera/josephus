@@ -7,7 +7,7 @@ object Main {
   def main(args: Array[String]): Unit = {
     args match {
       case Array(IntExtractor(size), IntExtractor(step)) if size > 0 =>
-        println(FastSurvivor(size, step))
+        println(Survivor(size, step))
       case _ =>
         // note: `step` may be negative => rotating around circle in opposite direction
         println("usage: sbt 'run size step' where size is positive")

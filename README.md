@@ -167,7 +167,7 @@ which produces the same results as the reference implementation, but with much l
 | Survivor           | 10000000 | 2    |  178 ms |
 | Survivor (revised) | 10000000 | 2    |    2 ms |
 
-No that's more like it!
+Now that's more like it!
 
 ## Running
 
